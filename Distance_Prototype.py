@@ -3,12 +3,22 @@ import numpy as np
 import math
 
 #load images
-imgs = [cv.imread("OtherImgs\Ball_2ft.jpg"), cv.imread("OtherImgs\Ball_3ft.jpg"), cv.imread("OtherImgs\Ball_4ft.jpg"), cv.imread("OtherImgs\Ball_19deg.jpg")]
+imgs = [
+    cv.imread("OtherImgs\Ball_2ft.jpg"), 
+    cv.imread("OtherImgs\Ball_3ft.jpg"), 
+    cv.imread("OtherImgs\Ball_4ft.jpg"), 
+    cv.imread("OtherImgs\Ball_19deg.jpg"),
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-084in-Center.jpg"),
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Center.jpg"),
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-132in-Center.jpg"),
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-180in-Center.jpg"),
+    ]
 
 focalLength = 0
 degpx = 0
 diagFOV = 68.5
 ballWidth = 7
+goalWidth = 39.25
 
 def maskBalls(image):
     image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
@@ -29,22 +39,11 @@ def findCircle(image):
     circles = cv.HoughCircles(image, cv.HOUGH_GRADIENT, 1, 100, param1=28, param2=30, minRadius=0, maxRadius=0) 
     return circles
 
-def findRect(image):
-    gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-    gray = cv.GaussianBlur(gray, (5, 5), 0)
-    edge = cv.Canny(gray, 35, 125)
-
-    __, contours, __ = cv.findContours(edge.copy(), cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE)
-    c = max(contours, key = cv.contourArea)
-
-    return cv.minAreaRect(c)
-
 def findDistance(width, focal, perWidth):
     return (width * focal) / perWidth
 
-def calibrate(image, dist):
+def calibrateBall(image, dist):
     global focalLength
-    global width
     masked = maskBalls(image)
     masked = cv.bitwise_and(image, image, mask = masked)
     
@@ -93,7 +92,43 @@ def distanceToBall(image):
 
     return distance, angle
 
+def calibrateGoal(image, distance):
+    global focalLength
+    masked = maskGoal(image)
+    rect = findGoal(masked)
+
+    focalLength = (rect[2] * distance)/goalWidth
+
+def maskGoal(image):
+    image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
+    upperLimit = np.array([100,255,255])
+    lowerLimit = np.array([65,100,100])
+
+    mask = cv.inRange(image.copy(), lowerLimit, upperLimit)
+
+    return mask
+
+def findGoal(mask):
+    contours = cv.findContours(cv.Canny(mask.copy(), 30, 200), cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)[1]
+    contours = max(contours, key = cv.contourArea)
+    rect = cv.boundingRect(contours)
+
+    return rect
+
+def distanceToGoal(image):
+    mask = maskGoal(image)
+    rect = findGoal(mask)
+
+    distance = findDistance(goalWidth, focalLength, rect[2])
+    angle = findAngle((rect[0] + rect[2]/2, rect[1]), mask)
+    distance = distance / (math.cos(math.radians(angle)))
+
+    return distance, angle
+
 setDegPx(imgs[1])
-calibrate(imgs[1], 36)
-print(distanceToBall(imgs[1]))
+calibrateBall(imgs[1], 36)
+#calibrateGoal(imgs[5], 156)
+
+print("ball", distanceToBall(imgs[0]))
+#print("goal", distanceToGoal(imgs[-1]))
 
