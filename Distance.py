@@ -12,6 +12,7 @@ imgs = [
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Center.jpg"),
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-132in-Center.jpg"),
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-180in-Center.jpg"),
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Left.jpg")
     ]
 
 focalLength = 0
@@ -97,7 +98,7 @@ def calibrateGoal(image, distance):
     masked = maskGoal(image)
     rect = findGoal(masked)
 
-    focalLength = (rect[2] * distance)/goalWidth
+    focalLength = (rect[3] * distance)/goalWidth
 
 def maskGoal(image):
     image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
@@ -119,16 +120,21 @@ def distanceToGoal(image):
     mask = maskGoal(image)
     rect = findGoal(mask)
 
-    distance = findDistance(goalWidth, focalLength, rect[2])
+    distance = findDistance(goalWidth, focalLength, rect[3])
     angle = findAngle((rect[0] + rect[2]/2, rect[1]), mask)
     distance = distance / (math.cos(math.radians(angle)))
+    
+    cv.rectangle(image, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), (0, 255, 0), 3)
+    cv.imshow("img", image)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
 
     return distance, angle
 
 setDegPx(imgs[1])
-calibrateBall(imgs[1], 36)
-#calibrateGoal(imgs[5], 156)
+#calibrateBall(imgs[1], 36)
+calibrateGoal(imgs[5], 156)
 
-print("ball", distanceToBall(imgs[0]))
-#print("goal", distanceToGoal(imgs[-1]))
+#print("ball", distanceToBall(imgs[0]))
+print("goal", distanceToGoal(imgs[-1]))
 
