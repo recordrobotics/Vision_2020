@@ -78,6 +78,9 @@ def distanceToBall(image):
     masked = cv.bitwise_and(image, image, mask = masked)
 
     circle = findCircle(masked)
+    if circle == None:
+        return None
+    
     radius = circle[0][0][2]
     center = [circle[0][0][1], circle[0][0][0]]
 
@@ -133,6 +136,6 @@ setDegPx(imgs[1])
 calibrateBall(imgs[1], 36)
 #calibrateGoal(imgs[5], 156)
 
-print("ball", distanceToBall(imgs[1]))
+print("ball", distanceToBall(imgs[4]))
 #print("goal", distanceToGoal(imgs[-1]))
 
