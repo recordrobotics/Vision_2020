@@ -78,10 +78,11 @@ def distanceToBall(image):
     masked = cv.bitwise_and(image, image, mask = masked)
 
     circle = findCircle(masked)
-    if circle == None:
-        return None
     
-    radius = circle[0][0][2]
+    try:
+        radius = circle[0][0][2]
+    except:
+        return None
     center = [circle[0][0][1], circle[0][0][0]]
 
     #draw and display circles as well
