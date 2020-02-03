@@ -12,11 +12,15 @@ imgs = [
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Center.jpg"),
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-132in-Center.jpg"),
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-180in-Center.jpg"),
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-224in-Center.jpg")
     ]
 
 focalLength = 0
-degpx = 0
+diagpx = 0
+hpx = 0
 diagFOV = 68.5
+horizontalFOV = math.degrees(math.atan(math.tan(math.radians(diagFOV/2)) * (imgs[0].shape[1]/math.sqrt(imgs[0].shape[0]** 2 + imgs[0].shape[1]**2)) * 2))
+print(horizontalFOV)
 ballWidth = 7
 goalWidth = 39.25
 
@@ -54,20 +58,20 @@ def calibrateBall(image, dist):
     focalLength = (radius * 2 * dist)/ballWidth
 
 def setDegPx(image):
-    global degpx
+    global diagpx
+    global hpx
 
     width = image.shape[1]
     height = image.shape[0]
     diag = math.sqrt(width**2 + height**2)
     #print("diag", diag)
 
-    degpx = diagFOV/diag
+    diagpx = diagFOV/diag
+    hpx = horizontalFOV/width
 
 def findAngle(point, image):
     center = [image.shape[0]/2, image.shape[1]/2]
-    #print("center ", center)
-    #print("point", point)
-    return math.sqrt(abs(center[0] - point[0])**2 + abs(center[1] - point[1])**2) * degpx
+    return abs(center[1] - point[1])*hpx
 
 def distanceToBall(image):
     masked = maskBalls(image)
@@ -129,6 +133,6 @@ setDegPx(imgs[1])
 calibrateBall(imgs[1], 36)
 #calibrateGoal(imgs[5], 156)
 
-print("ball", distanceToBall(imgs[0]))
+print("ball", distanceToBall(imgs[1]))
 #print("goal", distanceToGoal(imgs[-1]))
 
