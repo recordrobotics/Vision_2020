@@ -79,19 +79,19 @@ def distanceToBall(image):
 
     circle = findCircle(masked)
     
+    i = 0
+    max = circle[i][0][2]**2 * math.pi
+
+    for c in range(len(circle)):
+        if circle[c][0][2]**2 * math.pi > max:
+            max = circle[c][0][2]**2 * math.pi
+        i = c
+    
     try:
-        radius = circle[0][0][2]
+        radius = circle[i][0][2]
     except:
         return None
-    center = [circle[0][0][1], circle[0][0][0]]
-
-    #draw and display circles as well
-    cv.circle(image, (circle[0][0][0], circle[0][0][1]), radius, (0, 255, 0), 3)
-    #cv.line(image, image.shape[])
-
-    cv.imshow("circle", image)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
+    center = [circle[i][0][1], circle[0][0][0]]
 
     #calculate angles and distances
     angle = findAngle(center, image)
@@ -137,6 +137,6 @@ setDegPx(imgs[1])
 calibrateBall(imgs[1], 36)
 #calibrateGoal(imgs[5], 156)
 
-print("ball", distanceToBall(imgs[4]))
+print("ball", distanceToBall(imgs[0]))
 #print("goal", distanceToGoal(imgs[-1]))
 
