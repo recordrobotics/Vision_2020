@@ -3,6 +3,7 @@ import numpy as np
 import math
 
 #load images
+
 imgs = [
     cv.imread("OtherImgs\Ball_2ft.jpg"), 
     cv.imread("OtherImgs\Ball_3ft.jpg"), 
@@ -14,6 +15,8 @@ imgs = [
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-180in-Center.jpg"),
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-224in-Center.jpg")
     ]
+
+#imgs = [cv.imread("Ball_3ft.jpg")]
 
 focalLength = 0
 diagpx = 0
@@ -71,7 +74,7 @@ def setDegPx(image):
 
 def findAngle(point, image):
     center = [image.shape[0]/2, image.shape[1]/2]
-    return abs(center[1] - point[1])*hpx
+    return abs(center[1] - point[0])*hpx
 
 def distanceToBall(image):
     masked = maskBalls(image)
@@ -91,7 +94,14 @@ def distanceToBall(image):
         radius = circle[i][0][2]
     except:
         return None
-    center = [circle[i][0][1], circle[0][0][0]]
+    center = (circle[i][0][0], circle[0][0][1])
+    cv.circle(image, (center[0], center[1]), 3, (255, 0, 0), 3)
+    '''
+    cv.imshow("old", image)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+    '''
+    print(center)
 
     #calculate angles and distances
     angle = findAngle(center, image)
@@ -133,10 +143,34 @@ def distanceToGoal(image):
 
     return distance, angle
 
-setDegPx(imgs[1])
+def momentsBall(image):
+    binImg = maskBalls(image)
+
+    contours = cv.findContours(binImg, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)[1]
+    myContour = max(contours, key = cv.contourArea)
+
+    M = cv.moments(myContour, True)
+    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))\
+    
+    area = cv.contourArea(myContour)
+    print(area)
+    if area < 1000:
+        return None
+
+    cv.circle(image, center, 3, (0, 0, 255), 3)
+    cv.drawContours(image, [myContour], 0, (0, 255, 0), 3)
+
+    angle = findAngle(center, image)
+
+    pxWidth = math.sqrt(area/math.pi)*2
+    dist = findDistance(ballWidth, focalLength, pxWidth)
+    dist = dist / math.cos(math.radians(angle))
+
+    return dist, angle
+
+setDegPx(imgs[0])
 calibrateBall(imgs[1], 36)
 #calibrateGoal(imgs[5], 156)
 
-print("ball", distanceToBall(imgs[0]))
-#print("goal", distanceToGoal(imgs[-1]))
-
+print(momentsBall(imgs[3]))
+print(distanceToBall(imgs[3]))

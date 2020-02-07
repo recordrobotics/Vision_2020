@@ -9,6 +9,7 @@
 import json
 import time
 import sys
+import Distance
 
 from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
 from networktables import NetworkTables
@@ -25,37 +26,49 @@ cs.enableLogging()
 
 # Capture from the first USB Camera on the system
 camera = cs.startAutomaticCapture()
-camera.setResolution(160, 120)
+camera.setResolution(320, 240)
 
 # Get a CvSink. This will capture images from the camera
 cvSink = cs.getVideo()
 
 # (optional) Setup a CvSource. This will send images back to the Dashboard
-outputStream = cs.putVideo("SmartDashboard", 160, 120)
+outputStream = cs.putVideo("SmartDashboard", 320, 240)
 
 # Allocating new images is very expensive, always try to preallocate
-img = np.zeros(shape=(160, 120, 3), dtype=np.uint8)
+img = np.zeros(shape=(320, 240, 3), dtype=np.uint8)
 
 # As a client to connect to a robot
 NetworkTables.initialize(server='10.67.31.2')
 dashboard = NetworkTables.getTable('SmartDashboard')
 
+Distance.calibrateBall(Distance.imgs[0], 36)
+Distance.setDegPx(Distance.imgs[0], 36)
 while True:
     # Tell the CvSink to grab a frame from the camera and put it
     # in the source image.  If there is an error notify the output.
-    time, img = cvSink.grabFrame(img)
+    t, img = cvSink.grabFrame(img)
     #print(img)
-    if time == 0:
+    if t == 0:
         # Send the output the error.
-        #outputStream.notifyError(cvSink.getError())
-        # skip the rest of the current iteration
+        outputStream.notifyError(cvSink.getError())
         print("error")
-        continue
+        #skip the rest of the current iteration
+        #continue
     
-    #basic edge detection as a test
     grey = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
-    dashboard.putNumber("Test-Py", 42)
-    print("iteration")
+    outputStream.putFrame(img)
 
-    # (optional) send some image back to the dashboard
-    outputStream.putFrame(grey)
+    #basic edge detection as a test
+    dashboard.putNumber("Test-Py", 42)
+
+    try:
+        dist, theta = Distance.distanceToBall(img)
+    except:
+        dist = -1
+        theta = -1
+
+    dashboard.putNumber("Distace to Ball", dist)
+    dashboard.putNumber("Angle to Ball", theta)
+    print("Distance", dist)
+    print("Angle", theta)
+    #time.sleep(5)
