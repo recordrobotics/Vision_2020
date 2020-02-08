@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 #load images
-
+'''
 imgs = [
     cv.imread("OtherImgs\Ball_2ft.jpg"), 
     cv.imread("OtherImgs\Ball_3ft.jpg"), 
@@ -15,8 +15,16 @@ imgs = [
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-180in-Center.jpg"),
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-224in-Center.jpg")
     ]
+'''
+imgs = [cv.imread("Ball_3ft.jpg")]
 
-#imgs = [cv.imread("Ball_3ft.jpg")]
+#print(imgs[0].shape)
+for i in range(len(imgs)):
+    imgs[i] = cv.resize(imgs[i], (320, 240))
+
+cv.imshow("old", imgs[0])
+cv.waitKey(0)
+cv.destroyAllWindows()
 
 focalLength = 0
 diagpx = 0
@@ -52,13 +60,17 @@ def findDistance(width, focal, perWidth):
 def calibrateBall(image, dist):
     global focalLength
     masked = maskBalls(image)
-    masked = cv.bitwise_and(image, image, mask = masked)
     
-    circle = findCircle(masked)
-    radius = circle[0][0][2]
-    #print(radius)
+    contours = cv.findContours(masked, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)[1]
+    myContour = max(contours, key = cv.contourArea)
 
-    focalLength = (radius * 2 * dist)/ballWidth
+    M = cv.moments(myContour, True)
+    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+    
+    area = cv.contourArea(myContour)
+    diameter = math.sqrt(area/math.pi)*2
+
+    focalLength = (diameter * dist)/ballWidth
 
 def setDegPx(image):
     global diagpx
@@ -96,11 +108,9 @@ def distanceToBall(image):
         return None
     center = (circle[i][0][0], circle[0][0][1])
     cv.circle(image, (center[0], center[1]), 3, (255, 0, 0), 3)
-    '''
-    cv.imshow("old", image)
-    cv.waitKey(0)
-    cv.destroyAllWindows()
-    '''
+    
+    
+    
     print(center)
 
     #calculate angles and distances
@@ -150,7 +160,7 @@ def momentsBall(image):
     myContour = max(contours, key = cv.contourArea)
 
     M = cv.moments(myContour, True)
-    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))\
+    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
     
     area = cv.contourArea(myContour)
     print(area)
@@ -167,10 +177,11 @@ def momentsBall(image):
     dist = dist / math.cos(math.radians(angle))
 
     return dist, angle
-
+'''
 setDegPx(imgs[0])
 calibrateBall(imgs[1], 36)
 #calibrateGoal(imgs[5], 156)
 
 print(momentsBall(imgs[3]))
-print(distanceToBall(imgs[3]))
+#print(distanceToBall(imgs[3]))
+'''

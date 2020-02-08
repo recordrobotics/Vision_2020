@@ -62,7 +62,7 @@ while True:
     dashboard.putNumber("Test-Py", 42)
 
     try:
-        dist, theta = Distance.distanceToBall(img)
+        dist, theta = Distance.momentsBall(img)
     except:
         dist = -1
         theta = -1
