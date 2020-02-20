@@ -5,26 +5,26 @@ import math
 #load images
 '''
 imgs = [
-    cv.imread("OtherImgs\Ball_2ft.jpg"), 
-    cv.imread("OtherImgs\Ball_3ft.jpg"), 
-    cv.imread("OtherImgs\Ball_4ft.jpg"), 
-    cv.imread("OtherImgs\Ball_19deg.jpg"),
-    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-084in-Center.jpg"),
-    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Center.jpg"),
-    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-132in-Center.jpg"),
-    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-180in-Center.jpg"),
-    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-224in-Center.jpg")
+    cv.imread("OtherImgs\Ball_2ft.jpg"), #0
+    cv.imread("OtherImgs\Ball_3ft.jpg"), #1
+    cv.imread("OtherImgs\Ball_4ft.jpg"), #2
+    cv.imread("OtherImgs\Ball_19deg.jpg"), #3
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-060in-Center.jpg"), #4
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-108in-Center.jpg"), #5
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-084in-Center.jpg"), #6
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Center.jpg"), #6
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-132in-Center.jpg"), #7
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-180in-Center.jpg"), #8
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-224in-Center.jpg"), #9
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Left.jpg")    #10
     ]
 '''
 imgs = [cv.imread("Ball_3ft.jpg")]
 
+
 #print(imgs[0].shape)
 for i in range(len(imgs)):
-    imgs[i] = cv.resize(imgs[i], (320, 240))
-
-cv.imshow("old", imgs[0])
-cv.waitKey(0)
-cv.destroyAllWindows()
+    imgs[i] = cv.resize(imgs[i], (256, 144))
 
 focalLength = 0
 diagpx = 0
@@ -39,8 +39,8 @@ def maskBalls(image):
     image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
     #image = cv.GaussianBlur(image, (5,5), 0)
     #define colors
-    upperLimit = np.array([60,255,255])
-    lowerLimit = np.array([20,100,100])
+    upperLimit = np.array([80,255,255])
+    lowerLimit = np.array([0,100,100])
 
     mask = cv.inRange(image.copy(), lowerLimit, upperLimit)
 
@@ -50,7 +50,7 @@ def findCircle(image):
     #find circles in the masked image, return a center and a radius
     image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
     image = cv.medianBlur(image, 19)
-    #DO NOT CHANGE VALUES OF CIRCLE TRANSFORM. Param1 = 28, Param2 = 30
+    #DO NOT CHANGE VALUES OF CIRCLE TRANSFOR    M. Param1 = 28, Param2 = 30
     circles = cv.HoughCircles(image, cv.HOUGH_GRADIENT, 1, 100, param1=28, param2=30, minRadius=0, maxRadius=0) 
     return circles
 
@@ -148,9 +148,16 @@ def distanceToGoal(image):
     rect = findGoal(mask)
 
     distance = findDistance(goalWidth, focalLength, rect[2])
-    angle = findAngle((rect[0] + rect[2]/2, rect[1]), mask)
-    distance = distance / (math.cos(math.radians(angle)))
 
+    contours = cv.findContours(mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)[1]
+    myContour = max(contours, key=cv.contourArea)
+
+    M = cv.moments(myContour, True)
+    center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+    angle = findAngle(center, image)
+
+    distance = distance / (math.cos(math.radians(angle)))
+    
     return distance, angle
 
 def momentsBall(image):
@@ -164,11 +171,9 @@ def momentsBall(image):
     
     area = cv.contourArea(myContour)
     print(area)
-    if area < 1000:
-        return None
-
-    cv.circle(image, center, 3, (0, 0, 255), 3)
-    cv.drawContours(image, [myContour], 0, (0, 255, 0), 3)
+    
+    #cv.circle(image, center, 3, (0, 0, 255), 3)
+    #cv.drawContours(image, [myContour], 0, (0, 255, 0), 3)
 
     angle = findAngle(center, image)
 
@@ -184,4 +189,10 @@ calibrateBall(imgs[1], 36)
 
 print(momentsBall(imgs[3]))
 #print(distanceToBall(imgs[3]))
+'''
+'''
+setDegPx(imgs[6])
+calibrateGoal(imgs[6], 84)
+
+print(distanceToGoal(imgs[4]))
 '''

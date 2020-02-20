@@ -14,7 +14,6 @@ import Distance
 from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
 from networktables import NetworkTables
 import cv2 as cv
-import ntcore
 import numpy as np
 
 ### RUN THIS CODE ON THE RASPBERRY PI
@@ -26,23 +25,23 @@ cs.enableLogging()
 
 # Capture from the first USB Camera on the system
 camera = cs.startAutomaticCapture()
-camera.setResolution(320, 240)
+camera.setResolution(256, 144)
 
 # Get a CvSink. This will capture images from the camera
 cvSink = cs.getVideo()
 
 # (optional) Setup a CvSource. This will send images back to the Dashboard
-outputStream = cs.putVideo("SmartDashboard", 320, 240)
+outputStream = cs.putVideo("SmartDashboard", 256, 144)
 
 # Allocating new images is very expensive, always try to preallocate
-img = np.zeros(shape=(320, 240, 3), dtype=np.uint8)
+img = np.zeros(shape=(256, 144, 3), dtype=np.uint8)
 
 # As a client to connect to a robot
 NetworkTables.initialize(server='10.67.31.2')
 dashboard = NetworkTables.getTable('SmartDashboard')
 
 Distance.calibrateBall(Distance.imgs[0], 36)
-Distance.setDegPx(Distance.imgs[0], 36)
+Distance.setDegPx(Distance.imgs[0])
 while True:
     # Tell the CvSink to grab a frame from the camera and put it
     # in the source image.  If there is an error notify the output.
@@ -69,6 +68,6 @@ while True:
 
     dashboard.putNumber("Distace to Ball", dist)
     dashboard.putNumber("Angle to Ball", theta)
-    print("Distance", dist)
-    print("Angle", theta)
-    #time.sleep(5)
+    print("Distance", str(dist))
+    print("Angle", str(theta))
+    time.sleep(0.05 )
