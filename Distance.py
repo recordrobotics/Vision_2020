@@ -12,15 +12,20 @@ imgs = [
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-060in-Center.jpg"), #4
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-108in-Center.jpg"), #5
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-084in-Center.jpg"), #6
-    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Center.jpg"), #6
-    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-132in-Center.jpg"), #7
-    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-180in-Center.jpg"), #8
-    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-224in-Center.jpg"), #9
-    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Left.jpg")    #10
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Center.jpg"), #7
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-132in-Center.jpg"), #8
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-180in-Center.jpg"), #9
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-224in-Center.jpg"), #10
+    cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Left.jpg"),   #11
+    cv.imread("OtherImgs\GoalAtAngle.jpg"),  #12
+    cv.imread("OtherImgs\GoalAtAngle_WithRit.jpg"), #13
+    cv.imread("OtherImgs\GoalClose.jpg") #14
     ]
 '''
 imgs = [cv.imread("Ball_3ft.jpg")]
 
+
+cv.MergeExposures
 
 #print(imgs[0].shape)
 for i in range(len(imgs)):
@@ -39,8 +44,8 @@ def maskBalls(image):
     image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
     #image = cv.GaussianBlur(image, (5,5), 0)
     #define colors
-    upperLimit = np.array([80,255,255])
-    lowerLimit = np.array([0,100,100])
+    upperLimit = np.array([75,255,255])
+    lowerLimit = np.array([20,64,100])
 
     mask = cv.inRange(image.copy(), lowerLimit, upperLimit)
 
@@ -86,7 +91,7 @@ def setDegPx(image):
 
 def findAngle(point, image):
     center = [image.shape[0]/2, image.shape[1]/2]
-    return abs(center[1] - point[0])*hpx
+    return (center[1] - point[0])*hpx
 
 def distanceToBall(image):
     masked = maskBalls(image)
@@ -128,9 +133,9 @@ def calibrateGoal(image, distance):
     focalLength = (rect[2] * distance)/goalWidth
 
 def maskGoal(image):
-    image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
-    upperLimit = np.array([100,255,255])
-    lowerLimit = np.array([65,100,100])
+    image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+    upperLimit = np.array([253, 253, 253])
+    lowerLimit = np.array([250, 180 , 250])
 
     mask = cv.inRange(image.copy(), lowerLimit, upperLimit)
 
@@ -155,7 +160,15 @@ def distanceToGoal(image):
     M = cv.moments(myContour, True)
     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
     angle = findAngle(center, image)
-
+    print(center)
+    '''
+    cv.circle(image, center, 3, (0, 0, 255), 6)
+    cv.drawContours(image, [myContour], -1, (255, 0, 0), 1)
+    
+    cv.imshow("goal", image)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+    '''
     distance = distance / (math.cos(math.radians(angle)))
     
     return distance, angle
@@ -168,12 +181,21 @@ def momentsBall(image):
 
     M = cv.moments(myContour, True)
     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+    print(center)
     
     area = cv.contourArea(myContour)
     print(area)
     
-    #cv.circle(image, center, 3, (0, 0, 255), 3)
-    #cv.drawContours(image, [myContour], 0, (0, 255, 0), 3)
+    #debuging output, do not run on RPi
+    '''
+    cv.circle(image, center, 3, (0, 0, 255), 3)
+    cv.drawContours(image, [myContour], 0, (0, 255, 0), 3)
+    cv.line(image, (128, 0), (128, 144), (255, 0, 0), 3)
+
+    cv.imshow("potatoe", image)
+    cv.waitKey(0)
+    cv.destroyAllWindows()
+    '''
 
     angle = findAngle(center, image)
 
@@ -187,12 +209,12 @@ setDegPx(imgs[0])
 calibrateBall(imgs[1], 36)
 #calibrateGoal(imgs[5], 156)
 
-print(momentsBall(imgs[3]))
+print(momentsBall(imgs[0]))
 #print(distanceToBall(imgs[3]))
 '''
 '''
-setDegPx(imgs[6])
+setDegPx(imgs[0])
 calibrateGoal(imgs[6], 84)
 
-print(distanceToGoal(imgs[4]))
+print(distanceToGoal(imgs[14]))
 '''

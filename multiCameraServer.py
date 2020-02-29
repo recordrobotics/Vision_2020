@@ -16,15 +16,12 @@ from networktables import NetworkTables
 import cv2 as cv
 import numpy as np
 
-### RUN THIS CODE ON THE RASPBERRY PI
-### VISION PROCESSING NOT IMPLEMENTED
-
 print("test")
 cs = CameraServer.getInstance()
 cs.enableLogging()
 
 # Capture from the first USB Camera on the system
-camera = cs.startAutomaticCapture()
+camera = cs.startAutomaticCapture(dev=0)
 camera.setResolution(256, 144)
 
 # Get a CvSink. This will capture images from the camera
@@ -66,8 +63,18 @@ while True:
         dist = -1
         theta = -1
 
+    try:
+        goalDist, goalAngle = Distance.distanceToGoal(img)
+    except:
+        goalAngle = -1
+        goalDist = -1
+
     dashboard.putNumber("Distace to Ball", dist)
     dashboard.putNumber("Angle to Ball", theta)
+
+    dashboard.putNumber("Distance to Goal", goalDist)
+    dashboard.putNumber("Angle to Goal", goalAngle)
+
     print("Distance", str(dist))
     print("Angle", str(theta))
-    time.sleep(0.05 )
+    time.sleep(0.05)
