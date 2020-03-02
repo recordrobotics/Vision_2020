@@ -24,6 +24,9 @@ cs.enableLogging()
 camera = cs.startAutomaticCapture(dev=0)
 camera.setResolution(256, 144)
 
+cap = cv.VideoCapture(0)
+cap.set(cv.CAP_PROP_EXPOSURE, -10)
+
 # Get a CvSink. This will capture images from the camera
 cvSink = cs.getVideo()
 
@@ -42,14 +45,16 @@ Distance.setDegPx(Distance.imgs[0])
 while True:
     # Tell the CvSink to grab a frame from the camera and put it
     # in the source image.  If there is an error notify the output.
-    t, img = cvSink.grabFrame(img)
+    t, img = cap.read()
     #print(img)
+    '''
     if t == 0:
         # Send the output the error.
         outputStream.notifyError(cvSink.getError())
         print("error")
         #skip the rest of the current iteration
         #continue
+    '''
     
     grey = cv.cvtColor(img, cv.COLOR_RGB2GRAY)
     outputStream.putFrame(img)

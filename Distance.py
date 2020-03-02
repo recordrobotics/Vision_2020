@@ -136,6 +136,10 @@ def maskGoal(image):
     image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
     upperLimit = np.array([253, 253, 253])
     lowerLimit = np.array([250, 180 , 250])
+    '''
+    upperLimit = np.array([170, 100, 255])
+    lowerLimit = np.array([100, 0, 200])
+    '''
 
     mask = cv.inRange(image.copy(), lowerLimit, upperLimit)
 
