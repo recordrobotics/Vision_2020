@@ -19,7 +19,8 @@ imgs = [
     cv.imread("2020SampleVisionImages\WPILib Robot Vision Images\BlueGoal-156in-Left.jpg"),   #11
     cv.imread("OtherImgs\GoalAtAngle.jpg"),  #12
     cv.imread("OtherImgs\GoalAtAngle_WithRit.jpg"), #13
-    cv.imread("OtherImgs\GoalClose.jpg") #14
+    cv.imread("OtherImgs\GoalClose.jpg"), #14
+    cv.imread("OtherImgs\goodFrame1.png") #15
     ]
 '''
 imgs = [cv.imread("Ball_3ft.jpg")]
@@ -133,13 +134,9 @@ def calibrateGoal(image, distance):
     focalLength = (rect[2] * distance)/goalWidth
 
 def maskGoal(image):
-    image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-    upperLimit = np.array([253, 253, 253])
-    lowerLimit = np.array([250, 180 , 250])
-    '''
-    upperLimit = np.array([170, 100, 255])
-    lowerLimit = np.array([100, 0, 200])
-    '''
+    image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
+    upperLimit = np.array([90, 255, 255])
+    lowerLimit = np.array([70, 120, 120])
 
     mask = cv.inRange(image.copy(), lowerLimit, upperLimit)
 
@@ -165,17 +162,17 @@ def distanceToGoal(image):
     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
     angle = findAngle(center, image)
     print(center)
-    '''
+    
     cv.circle(image, center, 3, (0, 0, 255), 6)
     cv.drawContours(image, [myContour], -1, (255, 0, 0), 1)
-    
+    '''
     cv.imshow("goal", image)
     cv.waitKey(0)
     cv.destroyAllWindows()
     '''
     distance = distance / (math.cos(math.radians(angle)))
     
-    return distance, angle
+    return distance, angle, center, [myContour]
 
 def momentsBall(image):
     binImg = maskBalls(image)
@@ -215,10 +212,15 @@ calibrateBall(imgs[1], 36)
 
 print(momentsBall(imgs[0]))
 #print(distanceToBall(imgs[3]))
-'''
-'''
+
+
 setDegPx(imgs[0])
 calibrateGoal(imgs[6], 84)
 
-print(distanceToGoal(imgs[14]))
+print(distanceToGoal(imgs[15]))
+
+mask = maskGoal(imgs[15])
+cv.imshow("mask",mask)
+cv.waitKey(0)
+cv.destroyAllWindows()
 '''

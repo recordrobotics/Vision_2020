@@ -21,11 +21,13 @@ cs = CameraServer.getInstance()
 cs.enableLogging()
 
 # Capture from the first USB Camera on the system
+
 camera = cs.startAutomaticCapture(dev=0)
 camera.setResolution(256, 144)
 
-cap = cv.VideoCapture(0)
-cap.set(cv.CAP_PROP_EXPOSURE, -10)
+camera.setExposureManual(30)
+
+cap = cv.VideoCapture(2)
 
 # Get a CvSink. This will capture images from the camera
 cvSink = cs.getVideo()
@@ -45,8 +47,10 @@ Distance.setDegPx(Distance.imgs[0])
 while True:
     # Tell the CvSink to grab a frame from the camera and put it
     # in the source image.  If there is an error notify the output.
-    t, img = cap.read()
-    #print(img)
+    #cap.set(cv.CAP_PROP_EXPOSURE, -8)  
+    t, img = cvSink.grabFrame(img)
+    #r, stream = cap.read()
+
     '''
     if t == 0:
         # Send the output the error.
@@ -61,25 +65,31 @@ while True:
 
     #basic edge detection as a test
     dashboard.putNumber("Test-Py", 42)
-
+    '''
     try:
         dist, theta = Distance.momentsBall(img)
     except:
         dist = -1
         theta = -1
-
+    '''
     try:
-        goalDist, goalAngle = Distance.distanceToGoal(img)
+        goalDist, goalAngle, center, contour = Distance.distanceToGoal(img)
     except:
         goalAngle = -1
         goalDist = -1
+        #center = (int(stream.shape[0]/2), int(stream.shape[1]/2))
+        contour = None
 
-    dashboard.putNumber("Distace to Ball", dist)
-    dashboard.putNumber("Angle to Ball", theta)
+    #dashboard.putNumber("Distace to Ball", dist)
+    #dashboard.putNumber("Angle to Ball", theta)
 
     dashboard.putNumber("Distance to Goal", goalDist)
     dashboard.putNumber("Angle to Goal", goalAngle)
 
-    print("Distance", str(dist))
-    print("Angle", str(theta))
-    time.sleep(0.05)
+    #print(cap.get(cv.CAP_PROP_EXPOSURE))
+
+    #print("Goal Angle", goalAngle, end='\r')
+
+    #cv.line(stream, (int(stream.shape[1]/2), 0), (int(stream.shape[1]/2), stream.shape[0]), (0, 0, 255), 3, lineType=4)
+    #cv.circle(stream, center, 5, (0, 0, 255), 5)
+    #stream = cv.cvtColor(stream, cv.COLOR_BGR2GRAY)
