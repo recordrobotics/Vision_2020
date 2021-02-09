@@ -3,7 +3,6 @@ import numpy as np
 import math
 
 #load images
-'''
 imgs = [
     cv.imread("OtherImgs\Ball_2ft.jpg"), #0
     cv.imread("OtherImgs\Ball_3ft.jpg"), #1
@@ -22,8 +21,8 @@ imgs = [
     cv.imread("OtherImgs\GoalClose.jpg"), #14
     cv.imread("OtherImgs\goodFrame1.png") #15
     ]
-'''
-imgs = [cv.imread("Ball_3ft.jpg")]
+
+#imgs = [cv.imread("Ball_3ft.jpg")]
 
 
 cv.MergeExposures
@@ -37,7 +36,7 @@ diagpx = 0
 hpx = 0
 diagFOV = 68.5
 horizontalFOV = math.degrees(math.atan(math.tan(math.radians(diagFOV/2)) * (imgs[0].shape[1]/math.sqrt(imgs[0].shape[0]** 2 + imgs[0].shape[1]**2)) * 2))
-print(horizontalFOV)
+print(horizontalFOV, "HorizontalFOV")
 ballWidth = 7
 goalWidth = 39.25
 
@@ -66,9 +65,10 @@ def findDistance(width, focal, perWidth):
 def calibrateBall(image, dist):
     global focalLength
     masked = maskBalls(image)
-    
-    contours = cv.findContours(masked, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)[1]
-    myContour = max(contours, key = cv.contourArea)
+
+    contours, hierarchy = cv.findContours(masked, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+
+    myContour = max(contours, key=cv.contourArea)
 
     M = cv.moments(myContour, True)
     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
@@ -176,9 +176,10 @@ def distanceToGoal(image):
 
 def momentsBall(image):
     binImg = maskBalls(image)
+    print(image.shape, "ImgShape")
 
-    contours = cv.findContours(binImg, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)[1]
-    myContour = max(contours, key = cv.contourArea)
+    contours, hierarchy = cv.findContours(binImg, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+    myContour = min(contours, key = contourCenter)
 
     M = cv.moments(myContour, True)
     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
@@ -188,7 +189,6 @@ def momentsBall(image):
     print(area)
     
     #debuging output, do not run on RPi
-    '''
     cv.circle(image, center, 3, (0, 0, 255), 3)
     cv.drawContours(image, [myContour], 0, (0, 255, 0), 3)
     cv.line(image, (128, 0), (128, 144), (255, 0, 0), 3)
@@ -196,8 +196,7 @@ def momentsBall(image):
     cv.imshow("potatoe", image)
     cv.waitKey(0)
     cv.destroyAllWindows()
-    '''
-
+    
     angle = findAngle(center, image)
 
     pxWidth = math.sqrt(area/math.pi)*2
@@ -205,22 +204,27 @@ def momentsBall(image):
     dist = dist / math.cos(math.radians(angle))
 
     return dist, angle
-'''
+
+def contourCenter(contour):
+    width = 256
+
+    M = cv.moments(contour, True)
+
+    try:
+        cx = int(M['m10']/M['m00'])
+        cy = int(M['m01']/M['m00'])
+        print("HURRAH!")
+    except:
+        return math.inf
+    
+    if cv.contourArea(contour) < 1000:
+        return math.inf
+
+    return abs((width/2) - cx)
+
 setDegPx(imgs[0])
 calibrateBall(imgs[1], 36)
 #calibrateGoal(imgs[5], 156)
 
 print(momentsBall(imgs[0]))
 #print(distanceToBall(imgs[3]))
-
-
-setDegPx(imgs[0])
-calibrateGoal(imgs[6], 84)
-
-print(distanceToGoal(imgs[15]))
-
-mask = maskGoal(imgs[15])
-cv.imshow("mask",mask)
-cv.waitKey(0)
-cv.destroyAllWindows()
-'''
