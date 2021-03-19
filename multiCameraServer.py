@@ -25,7 +25,7 @@ cs.enableLogging()
 camera = cs.startAutomaticCapture(dev=0)
 camera.setResolution(256, 144)
 
-camera.setExposureManual(30)
+#camera.setExposureManual(30)
 
 cap = cv.VideoCapture(2)
 
@@ -65,13 +65,13 @@ while True:
 
     #basic edge detection as a test
     dashboard.putNumber("Test-Py", 42)
-    '''
+    
     try:
         dist, theta = Distance.momentsBall(img)
     except:
         dist = -1
         theta = -1
-    '''
+    
     try:
         goalDist, goalAngle, center, contour = Distance.distanceToGoal(img)
     except:
@@ -80,8 +80,8 @@ while True:
         #center = (int(stream.shape[0]/2), int(stream.shape[1]/2))
         contour = None
 
-    #dashboard.putNumber("Distace to Ball", dist)
-    #dashboard.putNumber("Angle to Ball", theta)
+    dashboard.putNumber("Distace to Ball", dist)
+    dashboard.putNumber("Angle to Ball", theta)
 
     dashboard.putNumber("Distance to Goal", goalDist)
     dashboard.putNumber("Angle to Goal", goalAngle)

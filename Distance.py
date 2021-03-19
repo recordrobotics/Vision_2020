@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 import math
 
+'''
 #load images
 imgs = [
     cv.imread("OtherImgs\Ball_2ft.jpg"), #0
@@ -21,10 +22,8 @@ imgs = [
     cv.imread("OtherImgs\GoalClose.jpg"), #14
     cv.imread("OtherImgs\goodFrame1.png") #15
     ]
-
-#imgs = [cv.imread("Ball_3ft.jpg")]
-
-
+'''
+imgs = [cv.imread("Ball_3ft.jpg")]
 cv.MergeExposures
 
 #print(imgs[0].shape)
@@ -66,7 +65,7 @@ def calibrateBall(image, dist):
     global focalLength
     masked = maskBalls(image)
 
-    contours, hierarchy = cv.findContours(masked, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
+    _, contours, hierarchy = cv.findContours(masked, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_NONE)
 
     myContour = max(contours, key=cv.contourArea)
 
@@ -192,11 +191,11 @@ def momentsBall(image):
     cv.circle(image, center, 3, (0, 0, 255), 3)
     cv.drawContours(image, [myContour], 0, (0, 255, 0), 3)
     cv.line(image, (128, 0), (128, 144), (255, 0, 0), 3)
-
+    '''
     cv.imshow("potatoe", image)
     cv.waitKey(0)
     cv.destroyAllWindows()
-    
+    '''
     angle = findAngle(center, image)
 
     pxWidth = math.sqrt(area/math.pi)*2
@@ -223,8 +222,8 @@ def contourCenter(contour):
     return abs((width/2) - cx)
 
 setDegPx(imgs[0])
-calibrateBall(imgs[1], 36)
+calibrateBall(imgs[0], 36)
 #calibrateGoal(imgs[5], 156)
 
-print(momentsBall(imgs[0]))
+#print(momentsBall(imgs[0]))
 #print(distanceToBall(imgs[3]))
